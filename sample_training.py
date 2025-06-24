@@ -25,7 +25,7 @@ def train_mlp():
     xs, ys = get_training_data()
 
     # initialize mlp
-    mlp = MLP(3, [4, 4, 1])
+    mlp = MLP(3, [4, 4, 1], activation='sigmoid')
 
     # define epochs to train for
     epoch = 10000

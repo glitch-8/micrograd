@@ -9,6 +9,14 @@ class Value:
         self._prev = set(_children)
         self._op = _op
         self.label = label
+
+        self.supported_activations = [
+            'tanh',
+            'sigmoid',
+            'relu',
+            'identity'
+        ]
+
     
     def __repr__(self):
         return f'Value(data={self.data}, grad={self.grad}, label={self.label})'
@@ -101,6 +109,28 @@ class Value:
 
         def _backward():
             self.grad += (1 if x>0 else 0)*out.grad
+        
+        out._backward = _backward
+
+        return out
+    
+    def sigmoid(self):
+        x = self.data
+        t = 1/(1 + math.exp(-x))
+        out = Value(t, (self, ), 'Sigmoid')
+
+        def _backward():
+            self.grad += t * (1 - t) * out.grad
+        
+        out._backward = _backward
+
+        return out
+    
+    def identity(self):
+        out = Value(self.data, (self, ), 'id')
+
+        def _backward():
+            self.grad += out.grad
         
         out._backward = _backward
 
