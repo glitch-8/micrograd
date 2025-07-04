@@ -102,6 +102,17 @@ class Value:
         out._backward = _backward
 
         return out
+
+    def log(self):
+        x = self.data
+        out = Value(math.log(x), (self, ), 'ln')
+
+        def _backward():
+            self.grad += (1/x)*out.grad
+        
+        out._backward = _backward
+
+        return out
     
     def relu(self):
         x = self.data
