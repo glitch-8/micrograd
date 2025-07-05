@@ -1,7 +1,8 @@
 class Optim:
     
-    def __init__(self, params):
+    def __init__(self, params, lr = 10e-2):
         self.params = params
+        self.lr = lr
 
     def step(self):
         raise NotImplementedError()
@@ -10,8 +11,7 @@ class Optim:
 class SGD(Optim):
 
     def __init__(self, params, lr = 10e-2, momentum=0.9, nesterovs=False):
-        super().__init__(params)
-        self.lr = lr
+        super().__init__(params, lr)
         self.momentum = momentum
         self.nesterovs = nesterovs
         self.velocities = [0]*len(params)
@@ -32,8 +32,7 @@ class SGD(Optim):
 class ADAGrad(Optim):
 
     def __init__(self, params, lr = 10e-2):
-        super().__init__(params)
-        self.lr = lr
+        super().__init__(params, lr)
         self.state = [0]*len(params)
     
     def step(self):
@@ -48,8 +47,7 @@ class ADAGrad(Optim):
 class RMSProp(Optim):
 
     def __init__(self, params, lr = 10e-2, gamma=0.9):
-        super().__init__(params)
-        self.lr = lr
+        super().__init__(params, lr)
         self.gamma = gamma
         self.state = [0]*len(params)
     
@@ -65,8 +63,7 @@ class RMSProp(Optim):
 class ADAM(Optim):
 
     def __init__(self, params, lr=10e-2, beta1=0.9, beta2=0.999):
-        super().__init__(params)
-        self.lr = lr
+        super().__init__(params, lr)
         self.beta1 = beta1
         self.beta2 = beta2
 

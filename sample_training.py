@@ -1,5 +1,5 @@
-from micrograd.nn import MLP
-from micrograd.engine import Value
+from minigrad.nn import MLP
+from minigrad.engine import Value
 
 
 def get_training_data():

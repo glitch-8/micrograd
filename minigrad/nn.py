@@ -1,7 +1,7 @@
 import random
 import math
 
-from micrograd.engine import Value
+from minigrad.engine import Value
 
 
 class Module:
