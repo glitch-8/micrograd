@@ -41,7 +41,7 @@ class Value:
         return self + (-other)
     
     def __rsub__(self, other):
-        return self + (-other)
+        return other + (-self)
     
     def __radd__(self, other):
         return self + other
@@ -66,7 +66,7 @@ class Value:
         return self * other**-1
     
     def __rtruediv__(self, other):
-        return other / self
+        return other * self**-1
     
     def __pow__(self, other):
         assert isinstance(other, (int, float)), "only supporting int/float powers for now"
@@ -78,6 +78,29 @@ class Value:
         out._backward = _backward
 
         return out
+    
+    def __lt__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self.data < other.data
+
+    def __gt__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self.data > other.data
+
+    def __le__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self.data <= other.data
+    
+    def __ge__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self.data >= other.data
+    
+    def __eq__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        return self.data == other.data
+
+    def __hash__(self):
+        return id(self)
     
     def tanh(self):
         n = self.data
@@ -142,6 +165,32 @@ class Value:
 
         def _backward():
             self.grad += out.grad
+        
+        out._backward = _backward
+
+        return out
+    
+    def min(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+
+        out = Value(min(self.data, other.data), (self, other), 'min')
+
+        def _backward():
+            self.grad += (1 if self.data<other.data else 0)*out.grad
+            other.grad += (1 if other.data<self.data else 0)*out.grad
+        
+        out._backward = _backward
+
+        return out
+    
+    def max(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+
+        out = Value(max(self.data, other.data), (self, other), 'max')
+
+        def _backward():
+            self.grad += (1 if self.data>other.data else 0)*out.grad
+            other.grad += (1 if other.data>self.data else 0)*out.grad
         
         out._backward = _backward
 

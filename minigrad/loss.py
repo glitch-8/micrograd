@@ -1,3 +1,6 @@
+from minigrad.engine import Value
+
+
 class Loss:
     
     def __init__(self, reduction='mean'):
@@ -64,7 +67,7 @@ class HuberLoss(Loss):
     def _calculate_losses(self, actuals, preds):
         errors = [(ypred - yactual).abs() for ypred, yactual in zip(preds, actuals)]
         return [
-            0.5(error**2) if error <= self.delta else (self.delta*(error - 0.5*self.delta))
+            0.5*(error**2) if error <= self.delta else (self.delta*(error - 0.5*self.delta))
             for error in errors
         ]
         
@@ -73,10 +76,11 @@ class BCELoss(Loss):
     
     def __init__(self, reduction='mean'):
         super().__init__(reduction)
+        self.epsilon = Value(10e-12) # use this to handle cases where 0/1 is passed to log function
 
     def _calculate_losses(self, actuals, preds):
         return [
-            -yactual*ypred.log() - (1 - yactual)*(1 - ypred).log()
+            -yactual*ypred.min(1 - self.epsilon).max(self.epsilon).log() - (1 - yactual)*(1 - ypred).min(1 - self.epsilon).max(self.epsilon).log()
             for ypred, yactual in zip(preds, actuals)
         ]
 
@@ -85,9 +89,18 @@ class CategoricalCrossEntropyLoss(Loss):
     
     def __init__(self, reduction='mean'):
         super().__init__(reduction)
-    
+        self.epsilon = Value(10e-12) # use this to handle cases where 0/1 is passed to log function
+
     def _calculate_losses(self, actuals, preds):
+        # apply softmax on preds
+        normalizing_constants = [
+            sum(p.exp() for p in ypred) for ypred in preds
+        ]
+        preds = [
+            [p.exp()/nc for p in ypred]
+            for nc, ypred in zip(normalizing_constants, preds)
+        ]
         return [
-            sum(-yactual*ypred.log() for ypred, yactual in zip(ypreds, yactuals))
+            sum(-yactual*ypred.min(1 - self.epsilon).max(self.epsilon).log() for ypred, yactual in zip(ypreds, yactuals))
             for ypreds, yactuals in zip(preds, actuals)
         ]
