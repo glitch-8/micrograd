@@ -66,10 +66,12 @@ class ADAM(Optim):
         super().__init__(params, lr)
         self.beta1 = beta1
         self.beta2 = beta2
+        self.t = 0 # timestamp
 
         self.state = [(0, 0)]*len(params)
     
     def step(self):
+        self.t += 1
         for counter, p in enumerate(self.params):
             state_old = self.state[counter]
             first_moment_old = state_old[0]
@@ -78,8 +80,8 @@ class ADAM(Optim):
             first_moment_new = self.beta1*first_moment_old + (1-self.beta1)*p.grad
             second_moment_new = self.beta2*second_moment_old + (1-self.beta2)*p.grad**2
 
-            first_moment_corrected = first_moment_new/(1-self.beta1**counter)
-            second_moment_corrected = second_moment_new/(1-self.beta2**counter)
+            first_moment_corrected = first_moment_new/(1-self.beta1**self.t)
+            second_moment_corrected = second_moment_new/(1-self.beta2**self.t)
 
             p.data -= self.lr * first_moment_corrected/(second_moment_corrected**0.5 + 1e-6)
 
