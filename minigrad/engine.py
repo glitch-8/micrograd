@@ -196,6 +196,16 @@ class Value:
 
         return out
     
+    def abs(self):
+        out = Value(abs(self.data), (self, ), 'abs')
+
+        def _backward():
+            self.grad += (1 if self.data>=0 else -1)*out.grad
+        
+        out._backward = _backward
+
+        return out
+    
     def backward(self):
         topo = []
         visited = set()
